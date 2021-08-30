@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>투두리</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+</head>
+<body>
+    <div id="app">
+        <div v-bind:style="styles.boardList">
+            <input type="button" @click="writeView" value='새 글쓰기'>
+            <ul>
+                <li style="list-style: none;cursor: pointer;" @click="boardNo=board.boardNo" v-for='board in boardList'>{{board.boardNo}} - {{board.title}}</li>
+            </ul>
+        </div>
+        <div v-bind:style="styles.board">
+            <template v-if="nowBoard && !isWriting">
+                <p>{{nowBoard.title}}</p>
+                <p style="white-space: pre-line">{{nowBoard.content}}</p>
+                <input type="button" value="삭제" @click="deleteBoard">
+                <input type="button" value="수정" @click="updateForm">
+            </template>
+            <input v-if='isWriting' v-model="newBoard.title" type="text" name="title" placeholder="제목"/>
+            <textarea v-if='isWriting' v-model="newBoard.content" name="content" ></textarea>
+            <input v-if='isWriting' type="button" value="저장" @click="writeBoard">
+            
+        </div>
+    </div>
+
+
+    <script>
+        var app = new Vue({
+            el : '#app',
+            data : {
+                boardList : {},
+                boardSeq : 0,
+                boardNo : '',
+                newBoard : {
+                    title : "",
+                    content : "",
+                },
+                nowBoard : null,
+                isWriting : false,
+                styles : {
+                    boardList : {
+                        float: 'left',
+                        width : '150px',
+                        borderRight : '1px solid black',
+                        height: '500px'
+                    },
+                    board :{
+                        float:'left',
+                        width : '300px',
+                        height: '500px'
+                    }
+                }
+            },
+            methods : {
+                writeView : function(){
+                    this.newBoard ={
+                        title : "",
+                        content : "",
+                    };
+                    this.nowBoard = null;
+                    this.isWriting = true;
+                },
+                writeBoard : function(){
+                    if(!this.newBoard.title){
+                        alert('제목은 필수입니다.');
+                        return;
+                    } else {
+                        if(!this.newBoard.boardNo){
+                            const no = this.boardSeq++;
+                            this.newBoard.boardNo = no;
+                        }
+                        this.boardList[this.newBoard.boardNo] = this.newBoard;
+                        this.boardNo = this.newBoard.boardNo;
+                    }
+                },
+                deleteBoard : function(){
+                    delete this.boardList[this.boardNo];
+                    this.boardNo = '';
+                },
+                updateForm : function(){
+                    this.newBoard = this.nowBoard;
+                    this.isWriting = true;
+                }
+            },
+            watch : {
+                boardNo : function(newBoardNo){
+                    this.isWriting = false;
+                    this.nowBoard = this.boardList[newBoardNo];
+                }
+            }
+        })
+    </script>
+
+
+</body>
+</html>
