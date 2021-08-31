@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+</head>
+<body>
+    <!--
+        Props
+         # Props로 데이터 전달하기
+         모든 컴포넌트 인스턴스에는 자체 격리 된 범위가 있습니다.
+         데이터는 props 옵션을 사용하여 하위 컴포넌트로 전달 될 수 있습니다.
+
+         prop은 상위 컴포넌트의 정보를 전달하기 위한 사용자 지정 특성이다.
+         하위 컴포넌트는 props 옵션을 사용하여 수신 할 것으로 기대되는
+         props를 명시적으로 선언해야 한다.
+    -->
+    <div id="example" >
+        <child message="안녕!"></child>
+    </div>
+
+    <script>
+        Vue.component('child', {
+            //props 정의
+            props : ['message'],
+            // prop은 템플릿 내부에서 사용할 수 있으며, vm의 this.message로 사용할 수 있다.
+            template : '<span>{{ message }} </span>'
+        });
+        new Vue({
+            el: '#example'
+        })
+    </script>
+
+    <!--
+        위 예시를 보면, 컴포넌트의 템플릿에서 message 데이터를 표시하게 되어있지만,
+        message 라는 데이터가 정의되어 있지는 않다.
+        대신 컴포넌트 인스턴스에서 데이터를 속성으로 값을 지정해주면 해당 인스턴스의 템플릿에
+        message 데이터가 들어가게 되는 것이다.
+
+        ## camelCase VS. kekbab-case
+        HTML 속성은 대소 문자를 구분하지 않으므로 문자열이 아닌 템플릿을 사용할 때 camelCased prop 이름에 해당하는 kebab-case(하이픈 구분)를 사용해야 합니다.
+
+        
+        Vue.component('child', {
+            // JavaScript는 camelCase
+            props: ['myMessage'],
+            template: '<span>{{ myMessage }}</span>'
+        })
+        
+    
+        HTML는 kebab-case
+        <child my-message="안녕하세요!"></child>
+        문자열 템플릿을 사용하는 경우에는 이 제한이 적용되지 않습니다.
+
+        # 동적 props
+        v-bind를 사용하여 부모의 데이터에 props를 동적으로 바인딩 할 수 있습니다.
+        데이터가 상위에서 업데이트 될 때마다 하위 데이터로도 전달됩니다.
+
+    -->
+    <div id="example-2">
+        <input v-model="parentMsg">
+        <br>
+        <child2 v-bind:my-message="parentMsg"></child>
+    </div>
+    <script>
+        Vue.component('child2', {
+            // JavaScript는 camelCase
+            props: ['myMessage'],
+            template: '<span>{{ myMessage }}</span>'
+        })
+        new Vue({
+            el : '#example-2',
+            data : {
+                parentMsg : ''
+            }
+        })
+    </script>
+
+    <!--
+        객체의 모든 속성을 props로 전달하려면, 인자없이 v-bind를 쓸 수 있습니다.
+        예를 들어 todo 객체가 있다면,
+        todo: {
+            text: 'Learn Vue',
+            isComplete: false
+        }
+        
+        <todo-item v-bind="todo"></todo-item>
+        이 인스턴스는 다음과 같은 동작을 합니다.
+
+        <todo-item
+            v-bind:text="todo.text"
+            v-bind:is-complete="todo.isComplete"
+        ></todo-item>
+
+        리터럴 vs. 동적
+        초보자가 흔히 범하는 실수는 리터럴 구문을 사용하여 숫자를 전달하려고 시도하는 것입니다.
+
+        이것은 일반 문자열 "1"을 전달합니다.
+        <comp some-prop="1"></comp>
+        그러나 이것은 리터럴 prop이기 때문에 그 값은 실제 숫자가 아닌 일반 문자열 "1" 로 전달됩니다. 실제 JavaScript 숫자를 전달하려면 값이 JavaScript 표현식으로 평가되도록 v-bind를 사용해야합니다.
+
+        이것은 실제 숫자로 전달합니다.
+        <comp v-bind:some-prop="1"></comp>
+
+        ## prop 검증
+        컴포넌트가 받는 중인 prop에 대한 요구사항을 지정할 수 있습니다. 요구사항이 충족 되지 않으면 Vue에서 경고를 내보냅니다. 이 기능은 다른 사용자가 사용할 컴포넌트를 제작할 때 특히 유용합니다.
+
+        props를 문자열 배열로 정의하는 대신 유효성 검사 요구사항이 있는 객체를 사용할 수 있습니다.
+
+        Vue.component('example', {
+        props: {
+                // 기본 타입 확인 (`null` 은 어떤 타입이든 가능하다는 뜻입니다)
+                propA: Number,
+                // 여러개의 가능한 타입
+                propB: [String, Number],
+                // 문자열이며 꼭 필요합니다
+                propC: {
+                    type: String,
+                    required: true
+                },
+                // 숫자이며 기본 값을 가집니다
+                propD: {
+                    type: Number,
+                    default: 100
+                },
+                // 객체/배열의 기본값은 팩토리 함수에서 반환 되어야 합니다.
+                propE: {
+                    type: Object,
+                    default: function () {
+                        return { message: 'hello' }
+                    }
+                },
+                // 사용자 정의 유효성 검사 가능
+                propF: {
+                    validator: function (value) {
+                        return value > 10
+                    }
+                }
+            }
+        })
+    -->
+
+    <!--
+        props가 아닌 속성
+            props가 아닌 속성은 컴포넌트로 전달되지만, 루트 엘리먼트에 자동으로
+            추가된다.
+            <bs-date-input data-3d-date-picker="true"></bs-date-input>
+            라고 하면 그 아래에 생길 input 엘리먼트에는 data-3d-date-picker 속성이 활성화 된다.
+
+            심지어 템플릿의 속성과 똑같은 속성으로 컴포넌트 인스턴스의 속성을 넣게되면,
+            충돌이 일어난다. 대부분 컴포넌트에 제공된 값이 대체하는데, 다행히 class와 style 속성은
+            두 값을 합친다.
+
+            ex)
+                템플릿 : <input type="date" class="form-control">
+                인스턴스 : <bs-date-input
+                            data-3d-date-picker="true"
+                            class="date-picker-theme-dark"
+                           ></bs-date-input>
+                결과 : <input type="date" data-3d-date-picker="true" class="form-control date-picker-theme-dark">
+
+    -->
+    <!--
+        # v-on을 이용한 사용자 지정 이벤트
+        모든 Vue 인스턴스는 다음과 같은 이벤트 인터페이스를 구현합니다.
+        $on(eventName) 이벤트 감지
+        $emit(eventName) 이벤트 실행
+
+        `$on`은 자식에서 호출한 이벤트는 감지하지 않습니다. 
+        `v-on`을 템플릿에 반드시 지정해야 합니다. 
+        아래의 예제를 보십시오.
+    -->
+    <div id="counter-event-example">
+        <p>{{ total }}</p>
+        <button-counter v-on:increment="incrementTotal"></button-counter>
+        <button-counter v-on:increment="incrementTotal"></button-counter>
+    </div>
+
+    <script>
+        Vue.component('button-counter', {
+            template : '<button v-on:click="incrementCounter">{{ counter }}</button>',
+            data : function(){
+                return {
+                    counter : 0
+                }
+            },
+            methods : {
+                incrementCounter : function(){
+                    this.counter += 1
+                    this.$emit('increment')
+                }
+            }
+        });
+
+        new Vue({
+            el : '#counter-event-example',
+            data : {
+                total : 0
+            },
+            methods : {
+                incrementTotal : function(){
+                    this.total += 1;
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>

@@ -10,14 +10,109 @@
 <body>
     <div id="example">
         <my-component></my-component>
-    </div>
-    <script>
+    </div> 
+    <!-- <script>
         Vue.component('my-component',{
             template : '<div>사용자 정의 컴포넌트 입니다!</div>'
         })
         new Vue({
             el : '#example'
         })
+    </script> -->
+
+    <!-- 
+        ## 지역 등록 
+            모든 컴포넌트를 전역으로 등록 할 필요는 없다.
+            컴포넌트를 components 인스턴스 옵션으로 등록함으로써
+            다른 인스턴스/컴포넌트의 범위에서만 사용할 수 있는 컴포넌트를 만들 수 있다.
+    -->
+
+    <script>
+        var Child = {
+            template : '<div>사용자 정의 컴포넌트 입니다!</div>'
+        }
+
+        new Vue({
+            el : '#example',
+            components : {
+                // <my-component>는 상위 템플릿에서만 사용할 수 있습니다.
+                'my-component' : Child
+            }
+        })
     </script>
+
+    <!--
+        # DOM 템플릿 구문 분석 경고
+            ul, ol, table, select 등 하위 엘리먼트가 정해져있는 경우
+            컴포넌트를 그대로 사용하면 문제가 발생할 수 있다.
+            ex)
+                <table>
+                    <my-row>...</my-row>
+                </table>
+            위 처럼 하면 렌더링시 에러가 발생한다.
+            해결방법은 is를 사용하는 것이다.
+            ex)
+                <table>
+                    <tr is="my-row"></tr>
+                </table>
+    -->
+
+    <!--
+        # data는 반드시 함수여야합니다.
+            컴포넌트의 data는 반드시 함수형식이어야 합니다.
+
+            <script>
+                Vue.component('my-component', {
+                    template : '<span>{{ message }}</span>',
+                    data : {
+                        message : 'hello'
+                    }
+                })
+            </script>
+            위와 같이 작성하면 Vue는 중단하고 콘솔에서 경고를 한다.
+            다음과 같이 사용해야 한다.
+    --> 
+    <div id="example-2">
+        <simple-counter></simple-counter>
+        <simple-counter></simple-counter>
+        <simple-counter></simple-counter>
+    </div>
+
+    <!-- <script>
+        var data={counter : 0}
+        Vue.component('simple-counter',{
+            template : '<button v-on:click="counter += 1">{{ counter }}</button',
+            data : function(){
+                return data;
+            }
+        })
+
+        new Vue({
+            el : '#example-2'
+        })
+    </script> -->
+
+    <!--
+        헌데 위처럼 하니 세개의 컴포넌트 인스턴스가 같은 data 객체를 공유하므로
+        하나의 카운트를 증가시키면 모두 증가한다.
+        대신 새로운 데이터 객체를 반환하여 이 문제를 해결한다.
+    -->
+
+    <script>
+        Vue.component('simple-counter',{
+            template : '<button v-on:click="counter += 1">{{ counter }}</button',
+            data : function(){
+                return {
+                    counter : 0
+                };
+            }
+        })
+
+        new Vue({
+            el : '#example-2'
+        })
+    </script>
+
+    
 </body>
 </html>
